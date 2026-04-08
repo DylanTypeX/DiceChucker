@@ -3,14 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaleRoll</title>
+    <title>Dice Chucker</title>
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Advent+Pro:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            min-height: 100%;
+        }
+
+        body {
+            background: linear-gradient(to bottom, #00BF77 0%, #B700FC 100%);
+            background-attachment: fixed;
+            font-family: 'Advent Pro', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+        }
+    
+    /* Toggle labels styling */
+    label {
+        font-weight: 700;
+        font-style: italic;
+    }
+        .title-img {
+            display: block;
+            width: min(100%, 640px);
+            height: auto;
+            margin: 0 auto 1rem auto;
+            object-fit: contain;
+        }
+        
+    </style>
+
+    <style>
+        .glass-panel {
+            background: rgba(20, 90, 80, 0.42);
+            border-radius: 0.75rem;
+        }
+
+        .dice-btn {
+            background: linear-gradient(90deg, #ff4a1c 0%, #1ff58a 100%);
+        }
+
+        .modifier-btn {
+            background: linear-gradient(90deg, #7e3ff2 0%, #f04fd2 100%) !important;
+        }
+
+        .saved-throw-btn {
+            background: linear-gradient(90deg, #0fd400 0%, #1542ff 100%);
+        }
+
+        .roll-btn {
+            background: linear-gradient(90deg, #cb00ff 0%, #4f70ff 100%);
+        }
+
+        .save-btn {
+            background: linear-gradient(90deg, #0fd400 0%, #1542ff 100%);
+        }
+
+        .delete-btn {
+            background: linear-gradient(90deg, #ff3a2f 0%, #d7003f 100%);
+        }
+
+        .dice-btn:hover,
+        .modifier-btn:hover,
+        .saved-throw-btn:hover,
+        .roll-btn:hover,
+        .save-btn:hover,
+        .delete-btn:hover {
+            filter: brightness(1.05);
+        }
+    </style>
+
 </head>
-<body class="bg-gray-900 p-4 min-h-screen">
+<body class="p-4 min-h-screen">
     <div class="max-w-6xl mx-auto">
         <div class="bg-gray-800 rounded-lg shadow-lg p-6">
-            <h1 class="text-3xl md:text-4xl font-bold text-center mb-6 text-white">TaleRoll</h1>
+            <img src="https://i.imgur.com/4vIKO9u.png" alt="Dice Chucker" class="title-img">
             
             <!-- Static "Roll:" text with dynamic roll result -->
             <div class="flex items-center">
@@ -21,14 +90,27 @@
             <!-- Dice Section -->
             <div class="mb-8">
                 <h2 class="text-xl md:text-2xl font-semibold mb-4 text-white">Dice</h2>
+                <div class="mb-4 flex items-center justify-between gap-4">
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="doubleRollToggle" class="sr-only peer">
+                        <div class="relative w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-700"></div>
+                        <span class="ms-3 text-sm font-bold italic text-white">Advantage/Disadvantage</span>
+                    </label>
+
+                    <label class="inline-flex items-center cursor-pointer justify-end">
+                        <span class="me-3 text-sm font-bold italic text-white">Subtract</span>
+                        <input type="checkbox" id="subtractDiceToggle" class="sr-only peer">
+                        <div class="relative w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-700"></div>
+                    </label>
+                </div>
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
-                    <button onclick="addDice(4)" class="cursor-pointer bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded text-sm md:text-base">Add D4</button>
-                    <button onclick="addDice(6)" class="cursor-pointer bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded text-sm md:text-base">Add D6</button>
-                    <button onclick="addDice(8)" class="cursor-pointer bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded text-sm md:text-base">Add D8</button>
-                    <button onclick="addDice(10)" class="cursor-pointer bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded text-sm md:text-base">Add D10</button>
-                    <button onclick="addDice(12)" class="cursor-pointer bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded text-sm md:text-base">Add D12</button>
-                    <button onclick="addDice(20)" class="cursor-pointer bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded text-sm md:text-base">Add D20</button>
-                    <button onclick="addDice(100)" class="cursor-pointer bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded text-sm md:text-base">Add D100</button>
+                    <button onclick="addDice(4)" class="cursor-pointer bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded text-sm md:text-base dice-btn">D4</button>
+                    <button onclick="addDice(6)" class="cursor-pointer bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded text-sm md:text-base dice-btn">D6</button>
+                    <button onclick="addDice(8)" class="cursor-pointer bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded text-sm md:text-base dice-btn">D8</button>
+                    <button onclick="addDice(10)" class="cursor-pointer bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded text-sm md:text-base dice-btn">D10</button>
+                    <button onclick="addDice(12)" class="cursor-pointer bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded text-sm md:text-base dice-btn">D12</button>
+                    <button onclick="addDice(20)" class="cursor-pointer bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded text-sm md:text-base dice-btn">D20</button>
+                    <button onclick="addDice(100)" class="cursor-pointer bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded text-sm md:text-base dice-btn">D100</button>
                 </div>
             </div>
 
@@ -43,15 +125,15 @@
                 </label>
   
                 <div id="modifiers-container" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-9 gap-2">
-                    <button onclick="addModifier(1)" class="modifier-btn bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded text-sm cursor-pointer md:text-base">Add +1</button>
-                    <button onclick="addModifier(2)" class="modifier-btn bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded text-sm cursor-pointer md:text-base">Add +2</button>
-                    <button onclick="addModifier(3)" class="modifier-btn bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded text-sm cursor-pointer md:text-base">Add +3</button>
-                    <button onclick="addModifier(4)" class="modifier-btn bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded text-sm cursor-pointer md:text-base">Add +4</button>
-                    <button onclick="addModifier(5)" class="modifier-btn bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded text-sm cursor-pointer md:text-base">Add +5</button>
-                    <button onclick="addModifier(6)" class="modifier-btn bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded text-sm cursor-pointer md:text-base">Add +6</button>
-                    <button onclick="addModifier(7)" class="modifier-btn bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded text-sm cursor-pointer md:text-base">Add +7</button>
-                    <button onclick="addModifier(8)" class="modifier-btn bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded text-sm cursor-pointer md:text-base">Add +8</button>
-                    <button onclick="addModifier(9)" class="modifier-btn bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded text-sm cursor-pointer md:text-base">Add +9</button>
+                    <button onclick="addModifier(1)" class="modifier-btn bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded text-sm cursor-pointer md:text-base">+1</button>
+                    <button onclick="addModifier(2)" class="modifier-btn bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded text-sm cursor-pointer md:text-base">+2</button>
+                    <button onclick="addModifier(3)" class="modifier-btn bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded text-sm cursor-pointer md:text-base">+3</button>
+                    <button onclick="addModifier(4)" class="modifier-btn bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded text-sm cursor-pointer md:text-base">+4</button>
+                    <button onclick="addModifier(5)" class="modifier-btn bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded text-sm cursor-pointer md:text-base">+5</button>
+                    <button onclick="addModifier(6)" class="modifier-btn bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded text-sm cursor-pointer md:text-base">+6</button>
+                    <button onclick="addModifier(7)" class="modifier-btn bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded text-sm cursor-pointer md:text-base">+7</button>
+                    <button onclick="addModifier(8)" class="modifier-btn bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded text-sm cursor-pointer md:text-base">+8</button>
+                    <button onclick="addModifier(9)" class="modifier-btn bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded text-sm cursor-pointer md:text-base">+9</button>
                 </div>
             </div>
 
@@ -97,7 +179,7 @@
 
             <!-- Generate URL Section -->
             <div class="text-center">
-                <button onclick="Roll()" class="bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 px-6 rounded text-lg cursor-pointer md:text-xl">Roll Dice</button>
+                <button onclick="Roll()" class="text-white font-bold py-3 px-6 rounded text-lg cursor-pointer md:text-xl roll-btn">Roll Dice</button>
                 <button data-modal-target="popup-modal" data-modal-toggle="popup-modal" onclick="setDefaultName()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-6 rounded cursor-pointer text-md md:text-lg">Save Throw</button>
             </div>
         </div>
