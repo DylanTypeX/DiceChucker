@@ -1,18 +1,18 @@
 {
   "manifestVersion": 1,
-  "name": "TaleRoll ",
+  "name": "Dice Chucker ",
   "summary": "A fresh take on a dice rolling symbiote",
   "descriptionFilePath": "/README.md",
   "version": "0.0.3",
-  "license": "MIT",
+  "license": "CC BY-NC-SA 4.0",
   "about": {
-    "website": "https://www.github.com/Lul/TaleRoll",
+    "website": "https://github.com/DylanTypeX/DiceChucker/",
     "authors": ["Dylan Barrett", "John Thiell"]
   },
   "kind": "webView",
   "entryPoint": "/index.html",
   "api": {
-    "version": "0.1",
+    "version": "1.0",
     "initTimeout": 10,
     "subscriptions": {
       "dice": {
