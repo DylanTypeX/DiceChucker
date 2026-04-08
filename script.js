@@ -1,40 +1,101 @@
-let diceURL = "";
-let dices = [];
-let modifiers = [];
-const display = document.getElementById("roll-display");
-const negativeToggle = document.getElementById("negativeToggle");
-const modifierButtons = document.querySelectorAll(".modifier-btn");
-const throwName = document.getElementById("throw-name");
+const state = {
+    dices: [],
+    modifiers: [],
+    diceCount: {}
+};
 
-// Function to refresh the display
-function refreshDisplay() {
-    display.textContent = generateURL();
+const elements = {
+    display: document.getElementById("roll-display"),
+    negativeToggle: document.getElementById("negativeToggle"),
+    doubleRollToggle: document.getElementById("doubleRollToggle"),
+    subtractDiceToggle: document.getElementById("subtractDiceToggle"),
+    modifierButtons: document.querySelectorAll(".modifier-btn"),
+    throwName: document.getElementById("throw-name"),
+    customContainer: document.getElementById("custom")
+};
+
+function renderRollDisplay() {
+    elements.display.textContent = buildRollFormula();
 }
 
-function initialize() {
-    console.log("Checking previous info...");
-    let playerThrows = localStorage.getItem("playerThrows");
-    if (playerThrows) {
-        // Parse the stored data to an object
-        playerThrows = JSON.parse(playerThrows);
-        console.log(playerThrows);
+function buildBaseFormula() {
+    const dicePart = state.dices.join("").replace(/^\+/, "");
+    const modifierPart = state.modifiers.join("");
+    return `${dicePart}${modifierPart}`;
+}
 
-        // Loop over the object keys and create buttons
-        for (let i = 0; i < Object.keys(playerThrows).length; i++) {
-            let throwName = Object.keys(playerThrows)[i];
-            let throwURL = playerThrows[throwName];
-            createButton("custom", throwName, throwURL);
-        }
+function buildRollFormula() {
+    const baseFormula = buildBaseFormula();
+
+    if (!baseFormula) {
+        return "";
+    }
+
+    if (elements.doubleRollToggle && elements.doubleRollToggle.checked) {
+        return `${baseFormula}/${baseFormula}`;
+    }
+
+    return baseFormula;
+}
+
+function resetCurrentThrow() {
+    state.dices = [];
+    state.modifiers = [];
+    state.diceCount = {};
+    renderRollDisplay();
+}
+
+function rebuildDiceArray() {
+    const sign = elements.subtractDiceToggle && elements.subtractDiceToggle.checked ? "-" : "+";
+
+    state.dices = Object.entries(state.diceCount)
+        .filter(([, count]) => count > 0)
+        .map(([die, count]) => {
+            const dieText = count > 1 ? `${count}${die}` : die;
+            return `${sign}${dieText}`;
+        });
+}
+
+function getSavedThrows() {
+    try {
+        return JSON.parse(localStorage.getItem("playerThrows")) || {};
+    } catch (error) {
+        console.error("Failed to read saved throws:", error);
+        return {};
     }
 }
 
-initialize();
+function saveSavedThrows(data) {
+    localStorage.setItem("playerThrows", JSON.stringify(data));
+}
 
-function createButton(containerId, buttonText, url) {
-    // Create the button element for the saved throw
+function makeSafeTooltipId(name) {
+    const cleaned = String(name)
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9_-]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
+    return `tooltip-${cleaned || "throw"}-${crypto.randomUUID()}`;
+}
+
+function showTooltip(tooltip) {
+    tooltip.classList.remove("invisible", "opacity-0");
+    tooltip.classList.add("visible", "opacity-100");
+}
+
+function hideTooltip(tooltip) {
+    tooltip.classList.remove("visible", "opacity-100");
+    tooltip.classList.add("invisible", "opacity-0");
+}
+
+function createSavedThrowElement(name, formula) {
+    const wrapper = document.createElement("div");
+    wrapper.classList.add("flex", "items-center", "gap-2", "w-full");
+
     const button = document.createElement("button");
-
-    // Add Tailwind styling
+    button.type = "button";
+    button.textContent = name;
     button.classList.add(
         "bg-purple-500",
         "hover:bg-purple-600",
@@ -45,15 +106,31 @@ function createButton(containerId, buttonText, url) {
         "rounded",
         "text-lg",
         "cursor-pointer",
-        "md:text-xl"
+        "md:text-xl",
+        "flex-1",
+        "min-w-0"
     );
 
-    // Set the button's text content
-    button.textContent = buttonText;
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.textContent = "Delete";
+    deleteButton.classList.add(
+        "bg-red-500",
+        "hover:bg-red-600",
+        "text-white",
+        "font-bold",
+        "py-1",
+        "px-3",
+        "rounded",
+        "text-sm",
+        "cursor-pointer",
+        "shrink-0"
+    );
 
-    // Create the tooltip element
     const tooltip = document.createElement("div");
-    tooltip.id = `tooltip-${buttonText}`;
+    const tooltipId = makeSafeTooltipId(name);
+
+    tooltip.id = tooltipId;
     tooltip.setAttribute("role", "tooltip");
     tooltip.classList.add(
         "absolute",
@@ -72,165 +149,139 @@ function createButton(containerId, buttonText, url) {
         "tooltip",
         "dark:bg-gray-700"
     );
-    tooltip.textContent = `${url}`;
-    
-    // Create tooltip arrow
+    tooltip.textContent = formula;
+
     const tooltipArrow = document.createElement("div");
     tooltipArrow.classList.add("tooltip-arrow");
     tooltip.appendChild(tooltipArrow);
 
-    // Set data attributes for the button (targeting the tooltip)
-    button.setAttribute("data-tooltip-target", `tooltip-${buttonText}`);
+    button.setAttribute("data-tooltip-target", tooltipId);
     button.setAttribute("data-tooltip-placement", "top");
 
-    // Add the button click event
-    button.addEventListener("click", function() {
-        diceURL = url;
-        display.textContent = url;
+    button.addEventListener("click", function () {
+        elements.display.textContent = formula;
     });
 
-    // Create delete button
-    const deleteButton = document.createElement("button");
-    deleteButton.textContent = "Delete";
-    deleteButton.classList.add(
-        "bg-red-500",
-        "hover:bg-red-600",
-        "text-white",
-        "font-bold",
-        "py-1",
-        "px-3",
-        "rounded",
-        "ml-2",
-        "text-sm",
-        "cursor-pointer"
-    );
-    
-    // Add delete button click event
-    deleteButton.addEventListener("click", function() {
-        // Remove the throw from localStorage
-        let playerdata = JSON.parse(localStorage.getItem('playerThrows')) || {};
-        delete playerdata[buttonText];
-        localStorage.setItem('playerThrows', JSON.stringify(playerdata));
+    button.addEventListener("mouseenter", function () {
+        showTooltip(tooltip);
+    });
 
-        // Remove the button and tooltip from the DOM
-        button.remove();
+    button.addEventListener("mouseleave", function () {
+        hideTooltip(tooltip);
+    });
+
+    deleteButton.addEventListener("click", function () {
+        const savedThrows = getSavedThrows();
+        delete savedThrows[name];
+        saveSavedThrows(savedThrows);
+
+        wrapper.remove();
         tooltip.remove();
-        deleteButton.remove();
-        console.log(`Deleted throw: ${buttonText}`);
     });
 
-    // Append the button, delete button, and tooltip to the container
-    const container = document.getElementById(containerId);
-    if (container) {
-        container.appendChild(button);
-        container.appendChild(deleteButton);
-        container.appendChild(tooltip);  // Append the tooltip
-    } else {
-        console.error("Container not found!");
+    wrapper.appendChild(button);
+    wrapper.appendChild(deleteButton);
+
+    return { wrapper, tooltip };
+}
+
+function renderSavedThrows() {
+    elements.customContainer.innerHTML = "";
+
+    const savedThrows = getSavedThrows();
+
+    for (const [name, formula] of Object.entries(savedThrows)) {
+        const { wrapper, tooltip } = createSavedThrowElement(name, formula);
+        elements.customContainer.appendChild(wrapper);
+        elements.customContainer.appendChild(tooltip);
     }
+}
 
-    // Add hover effect for the tooltip to show/hide it
-    button.addEventListener("mouseenter", function() {
-        tooltip.classList.remove("invisible", "opacity-0");
-        tooltip.classList.add("visible", "opacity-100");
-    });
+function initialize() {
+    renderSavedThrows();
+    updateModifierButtons();
+    renderRollDisplay();
+}
 
-    button.addEventListener("mouseleave", function() {
-        tooltip.classList.remove("visible", "opacity-100");
-        tooltip.classList.add("invisible", "opacity-0");
-    });
+function addDice(number) {
+    const dieKey = `d${number}`;
+    state.diceCount[dieKey] = (state.diceCount[dieKey] || 0) + 1;
+
+    rebuildDiceArray();
+    renderRollDisplay();
+}
+
+function addModifier(number) {
+    const value = elements.negativeToggle.checked ? -Math.abs(number) : Math.abs(number);
+    state.modifiers.push(value >= 0 ? `+${value}` : `${value}`);
+    renderRollDisplay();
 }
 
 function setDefaultName() {
-    throwName.value = generateURL();
+    const formula = buildRollFormula();
+    elements.throwName.value = formula || "";
 }
 
 function saveThrow() {
-    // Initialize playerdata if it doesn't exist
-    let playerdata = JSON.parse(localStorage.getItem('playerThrows')) || {};
+    const name = elements.throwName.value.trim();
+    const formula = buildRollFormula();
 
-    // Check if a throw name already exists
-    if (playerdata[throwName.value] !== undefined) {
-        console.log("This throw name already exists!");
-    } else {
-        // Save the new throw with its name as the key
-        playerdata[throwName.value] = generateURL();
-        localStorage.setItem('playerThrows', JSON.stringify(playerdata));
-        console.log(`Saved throw with name: ${throwName.value}`);
-
-        // Create the button for the saved throw
-        createButton("custom", throwName.value, playerdata[throwName.value]);
-    }
-}
-
-// Function to add a dice to the list
-function addDice(number) {
-    // Convert dices array to an object to track counts if it's not already
-    if (!window.diceCount) {
-        window.diceCount = {};
-    }
-    
-    // Initialize or increment the count for this dice
-    window.diceCount[`d${number}`] = (window.diceCount[`d${number}`] || 0) + 1;
-    
-    // Update dices array to reflect the current state
-    dices = [];
-    for (let [dice, count] of Object.entries(window.diceCount)) {
-        if (count > 0) {
-            dices.push(count > 1 ? `${count}${dice}` : dice);
-        }
-    }
-    
-    console.log(`Added d${number}, total: ${window.diceCount[`d${number}`]}${`d${number}`}`);
-    refreshDisplay();
-}
-
-// Function to add a modifier
-function addModifier(number) {
-    let modifier = negativeToggle.checked ? -Math.abs(number) : Math.abs(number);
-    modifiers.push(modifier >= 0 ? `+${modifier}` : `${modifier}`);
-    refreshDisplay();
-}
-
-// Function to generate the dice roll URL
-function generateURL() {
-    diceURL = ""; // Reset before generating new URL
-    let first = true;
-
-    for (let i = 0; i < dices.length; i++) {
-        if (first) {
-            diceURL += dices[i];
-        } else {
-            diceURL += "+" + dices[i];
-        }
-        first = false;
-    }
-    
-    for (let j = 0; j < modifiers.length; j++) {
-        diceURL += modifiers[j]; 
+    if (!name) {
+        alert("Enter a name for the throw.");
+        return;
     }
 
-    console.log(diceURL);
-    return diceURL;
+    if (!formula) {
+        alert("Build a throw before saving it.");
+        return;
+    }
+
+    const savedThrows = getSavedThrows();
+
+    if (savedThrows[name] !== undefined) {
+        alert("That throw name already exists.");
+        return;
+    }
+
+    savedThrows[name] = formula;
+    saveSavedThrows(savedThrows);
+
+    const { wrapper, tooltip } = createSavedThrowElement(name, formula);
+    elements.customContainer.appendChild(wrapper);
+    elements.customContainer.appendChild(tooltip);
+
+    elements.throwName.value = "";
 }
 
 function Roll() {
-    window.open("talespire://dice/" + diceURL, "_self");
-    diceURL = "";
-    display.value = "";
-    dices = [];
-    modifiers = [];
-    window.diceCount = {};
-    refreshDisplay();
+    const formula = buildRollFormula();
+
+    if (!formula) {
+        return;
+    }
+
+    window.open(`talespire://dice/${formula}`, "_self");
+    resetCurrentThrow();
 }
 
-// Function to update the modifier button text based on toggle state
 function updateModifierButtons() {
-    modifierButtons.forEach((button, index) => {
-        let value = index + 1; // Button values range from +1 to +9
-        button.textContent = negativeToggle.checked ? `Add -${value}` : `Add +${value}`;
+    elements.modifierButtons.forEach((button, index) => {
+        const value = index + 1;
+        button.textContent = elements.negativeToggle.checked ? `-${value}` : `+${value}`;
     });
 }
 
-// Attach event listener to the toggle switch
-negativeToggle.addEventListener("change", updateModifierButtons);
+elements.negativeToggle.addEventListener("change", updateModifierButtons);
+
+if (elements.doubleRollToggle) {
+    elements.doubleRollToggle.addEventListener("change", renderRollDisplay);
+}
+
+if (elements.subtractDiceToggle) {
+    elements.subtractDiceToggle.addEventListener("change", () => {
+        rebuildDiceArray();
+        renderRollDisplay();
+    });
+}
+
+initialize();
