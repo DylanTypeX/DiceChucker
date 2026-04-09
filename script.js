@@ -1,7 +1,7 @@
 const state = {
     dices: [],
     modifiers: [],
-    diceCount: {}
+    terms: []
 };
 
 const elements = {
@@ -15,13 +15,17 @@ const elements = {
 };
 
 function renderRollDisplay() {
-    elements.display.textContent = buildRollFormula();
+    const formula = buildRollFormula();
+    elements.display.textContent = formula;
+
+    const clearBtn = document.getElementById("clear-roll-btn");
+    if (clearBtn) {
+        clearBtn.style.display = formula ? "inline-flex" : "none";
+    }
 }
 
 function buildBaseFormula() {
-    const dicePart = state.dices.join("").replace(/^\+/, "");
-    const modifierPart = state.modifiers.join("");
-    return `${dicePart}${modifierPart}`;
+    return state.terms.join("").replace(/^\+/, "");
 }
 
 function buildRollFormula() {
@@ -41,19 +45,12 @@ function buildRollFormula() {
 function resetCurrentThrow() {
     state.dices = [];
     state.modifiers = [];
-    state.diceCount = {};
+    state.terms = [];
     renderRollDisplay();
 }
 
 function rebuildDiceArray() {
-    const sign = elements.subtractDiceToggle && elements.subtractDiceToggle.checked ? "-" : "+";
-
-    state.dices = Object.entries(state.diceCount)
-        .filter(([, count]) => count > 0)
-        .map(([die, count]) => {
-            const dieText = count > 1 ? `${count}${die}` : die;
-            return `${sign}${dieText}`;
-        });
+    return;
 }
 
 function getSavedThrows() {
@@ -204,16 +201,18 @@ function initialize() {
 }
 
 function addDice(number) {
-    const dieKey = `d${number}`;
-    state.diceCount[dieKey] = (state.diceCount[dieKey] || 0) + 1;
-
-    rebuildDiceArray();
+    const sign = elements.subtractDiceToggle && elements.subtractDiceToggle.checked ? "-" : "+";
+    const term = `${sign}d${number}`;
+    state.dices.push(term);
+    state.terms.push(term);
     renderRollDisplay();
 }
 
 function addModifier(number) {
     const value = elements.negativeToggle.checked ? -Math.abs(number) : Math.abs(number);
-    state.modifiers.push(value >= 0 ? `+${value}` : `${value}`);
+    const term = value >= 0 ? `+${value}` : `${value}`;
+    state.modifiers.push(term);
+    state.terms.push(term);
     renderRollDisplay();
 }
 
@@ -279,7 +278,6 @@ if (elements.doubleRollToggle) {
 
 if (elements.subtractDiceToggle) {
     elements.subtractDiceToggle.addEventListener("change", () => {
-        rebuildDiceArray();
         renderRollDisplay();
     });
 }

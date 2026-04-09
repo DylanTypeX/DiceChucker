@@ -4,15 +4,15 @@
   "summary": "A fresh take on a dice rolling symbiote",
   "descriptionFilePath": "/README.md",
   "version": "0.0.3",
-  "license": "CC BY-NC-SA 4.0",
+  "license": "MIT",
   "about": {
-    "website": "https://github.com/DylanTypeX/DiceChucker/",
+    "website": "https://www.github.com/Lul/Dice Chucker",
     "authors": ["Dylan Barrett", "John Thiell"]
   },
   "kind": "webView",
   "entryPoint": "/index.html",
   "api": {
-    "version": "1.0",
+    "version": "0.1",
     "initTimeout": 10,
     "subscriptions": {
       "dice": {
